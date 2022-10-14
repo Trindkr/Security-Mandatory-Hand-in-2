@@ -18,8 +18,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CommitmentServiceClient interface {
-	CommitMsg(ctx context.Context, in *Commitment, opts ...grpc.CallOption) (*Commitment_Res, error)
-	ValidateCommitment(ctx context.Context, in *Commitment_Val, opts ...grpc.CallOption) (*Commitment_Val_Res, error)
+	CommitMsg(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Commitment, error)
+	ValidateCommitment(ctx context.Context, in *Commitment, opts ...grpc.CallOption) (*Commitment_Res, error)
 }
 
 type commitmentServiceClient struct {
@@ -30,8 +30,8 @@ func NewCommitmentServiceClient(cc grpc.ClientConnInterface) CommitmentServiceCl
 	return &commitmentServiceClient{cc}
 }
 
-func (c *commitmentServiceClient) CommitMsg(ctx context.Context, in *Commitment, opts ...grpc.CallOption) (*Commitment_Res, error) {
-	out := new(Commitment_Res)
+func (c *commitmentServiceClient) CommitMsg(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Commitment, error) {
+	out := new(Commitment)
 	err := c.cc.Invoke(ctx, "/proto.CommitmentService/CommitMsg", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -39,8 +39,8 @@ func (c *commitmentServiceClient) CommitMsg(ctx context.Context, in *Commitment,
 	return out, nil
 }
 
-func (c *commitmentServiceClient) ValidateCommitment(ctx context.Context, in *Commitment_Val, opts ...grpc.CallOption) (*Commitment_Val_Res, error) {
-	out := new(Commitment_Val_Res)
+func (c *commitmentServiceClient) ValidateCommitment(ctx context.Context, in *Commitment, opts ...grpc.CallOption) (*Commitment_Res, error) {
+	out := new(Commitment_Res)
 	err := c.cc.Invoke(ctx, "/proto.CommitmentService/ValidateCommitment", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -52,8 +52,8 @@ func (c *commitmentServiceClient) ValidateCommitment(ctx context.Context, in *Co
 // All implementations must embed UnimplementedCommitmentServiceServer
 // for forward compatibility
 type CommitmentServiceServer interface {
-	CommitMsg(context.Context, *Commitment) (*Commitment_Res, error)
-	ValidateCommitment(context.Context, *Commitment_Val) (*Commitment_Val_Res, error)
+	CommitMsg(context.Context, *Message) (*Commitment, error)
+	ValidateCommitment(context.Context, *Commitment) (*Commitment_Res, error)
 	mustEmbedUnimplementedCommitmentServiceServer()
 }
 
@@ -61,10 +61,10 @@ type CommitmentServiceServer interface {
 type UnimplementedCommitmentServiceServer struct {
 }
 
-func (UnimplementedCommitmentServiceServer) CommitMsg(context.Context, *Commitment) (*Commitment_Res, error) {
+func (UnimplementedCommitmentServiceServer) CommitMsg(context.Context, *Message) (*Commitment, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CommitMsg not implemented")
 }
-func (UnimplementedCommitmentServiceServer) ValidateCommitment(context.Context, *Commitment_Val) (*Commitment_Val_Res, error) {
+func (UnimplementedCommitmentServiceServer) ValidateCommitment(context.Context, *Commitment) (*Commitment_Res, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateCommitment not implemented")
 }
 func (UnimplementedCommitmentServiceServer) mustEmbedUnimplementedCommitmentServiceServer() {}
@@ -81,7 +81,7 @@ func RegisterCommitmentServiceServer(s grpc.ServiceRegistrar, srv CommitmentServ
 }
 
 func _CommitmentService_CommitMsg_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Commitment)
+	in := new(Message)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -93,13 +93,13 @@ func _CommitmentService_CommitMsg_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/proto.CommitmentService/CommitMsg",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommitmentServiceServer).CommitMsg(ctx, req.(*Commitment))
+		return srv.(CommitmentServiceServer).CommitMsg(ctx, req.(*Message))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CommitmentService_ValidateCommitment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Commitment_Val)
+	in := new(Commitment)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func _CommitmentService_ValidateCommitment_Handler(srv interface{}, ctx context.
 		FullMethod: "/proto.CommitmentService/ValidateCommitment",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommitmentServiceServer).ValidateCommitment(ctx, req.(*Commitment_Val))
+		return srv.(CommitmentServiceServer).ValidateCommitment(ctx, req.(*Commitment))
 	}
 	return interceptor(ctx, in, info, handler)
 }
