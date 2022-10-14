@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option go_package = "github.com/Trindkr/Security-Mandatory-Hand-in-2-golang/proto";
+
+package proto;
+
+service CommitmentService 
+{
+    rpc CommitMsg (Commitment) returns (Commitment_Res); //Alice sends a commitment
+    rpc ValidateCommitment (Commitment_Val) returns (Commitment_Val_Res); //Bob responds to commitment
+}
+
+message Commitment {
+    bytes msg = 1;
+}
+
+message Commitment_Res {
+    int64 random = 1;
+}
+
+message Commitment_Val {
+    int64 random = 2;
+}
+
+message Commitment_Val_Res {
+    bool val = 1;
+    int64 roll = 2;
+}
