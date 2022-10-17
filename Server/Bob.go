@@ -27,6 +27,12 @@ var port = flag.Int("port", 50051, "the port to serve on")
 // }
 
 func main() {
+
+	serverSetup()
+}
+
+
+func serverSetup(){
 	flag.Parse()
 	log.Printf("Bob starting on port %d...\n", *port)
 
@@ -64,4 +70,5 @@ func main() {
 	if err := serv.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+
 }
