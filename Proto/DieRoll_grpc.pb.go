@@ -18,8 +18,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CommitmentServiceClient interface {
-	CommitMsg(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Commitment, error)
-	ValidateCommitment(ctx context.Context, in *Commitment, opts ...grpc.CallOption) (*Commitment_Res, error)
+	CommitMsg(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message_Res, error)
+	ValidateCommitment(ctx context.Context, in *Validate_Message, opts ...grpc.CallOption) (*Validate_Message_Res, error)
 }
 
 type commitmentServiceClient struct {
@@ -30,8 +30,8 @@ func NewCommitmentServiceClient(cc grpc.ClientConnInterface) CommitmentServiceCl
 	return &commitmentServiceClient{cc}
 }
 
-func (c *commitmentServiceClient) CommitMsg(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Commitment, error) {
-	out := new(Commitment)
+func (c *commitmentServiceClient) CommitMsg(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message_Res, error) {
+	out := new(Message_Res)
 	err := c.cc.Invoke(ctx, "/proto.CommitmentService/CommitMsg", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -39,8 +39,8 @@ func (c *commitmentServiceClient) CommitMsg(ctx context.Context, in *Message, op
 	return out, nil
 }
 
-func (c *commitmentServiceClient) ValidateCommitment(ctx context.Context, in *Commitment, opts ...grpc.CallOption) (*Commitment_Res, error) {
-	out := new(Commitment_Res)
+func (c *commitmentServiceClient) ValidateCommitment(ctx context.Context, in *Validate_Message, opts ...grpc.CallOption) (*Validate_Message_Res, error) {
+	out := new(Validate_Message_Res)
 	err := c.cc.Invoke(ctx, "/proto.CommitmentService/ValidateCommitment", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -52,8 +52,8 @@ func (c *commitmentServiceClient) ValidateCommitment(ctx context.Context, in *Co
 // All implementations must embed UnimplementedCommitmentServiceServer
 // for forward compatibility
 type CommitmentServiceServer interface {
-	CommitMsg(context.Context, *Message) (*Commitment, error)
-	ValidateCommitment(context.Context, *Commitment) (*Commitment_Res, error)
+	CommitMsg(context.Context, *Message) (*Message_Res, error)
+	ValidateCommitment(context.Context, *Validate_Message) (*Validate_Message_Res, error)
 	mustEmbedUnimplementedCommitmentServiceServer()
 }
 
@@ -61,10 +61,10 @@ type CommitmentServiceServer interface {
 type UnimplementedCommitmentServiceServer struct {
 }
 
-func (UnimplementedCommitmentServiceServer) CommitMsg(context.Context, *Message) (*Commitment, error) {
+func (UnimplementedCommitmentServiceServer) CommitMsg(context.Context, *Message) (*Message_Res, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CommitMsg not implemented")
 }
-func (UnimplementedCommitmentServiceServer) ValidateCommitment(context.Context, *Commitment) (*Commitment_Res, error) {
+func (UnimplementedCommitmentServiceServer) ValidateCommitment(context.Context, *Validate_Message) (*Validate_Message_Res, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateCommitment not implemented")
 }
 func (UnimplementedCommitmentServiceServer) mustEmbedUnimplementedCommitmentServiceServer() {}
@@ -99,7 +99,7 @@ func _CommitmentService_CommitMsg_Handler(srv interface{}, ctx context.Context, 
 }
 
 func _CommitmentService_ValidateCommitment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Commitment)
+	in := new(Validate_Message)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func _CommitmentService_ValidateCommitment_Handler(srv interface{}, ctx context.
 		FullMethod: "/proto.CommitmentService/ValidateCommitment",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommitmentServiceServer).ValidateCommitment(ctx, req.(*Commitment))
+		return srv.(CommitmentServiceServer).ValidateCommitment(ctx, req.(*Validate_Message))
 	}
 	return interceptor(ctx, in, info, handler)
 }

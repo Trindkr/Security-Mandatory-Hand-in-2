@@ -6,19 +6,23 @@ package proto;
 
 service CommitmentService 
 {
-    rpc CommitMsg (Message) returns (Commitment); //Alice sends a commitment
-    rpc ValidateCommitment (Commitment) returns (Commitment_Res); //Bob responds to commitment
+    rpc CommitMsg (Message) returns (Message_Res); 
+    rpc ValidateCommitment (Validate_Message) returns (Validate_Message_Res); //Bob responds to commitment
 }
 
 message Message {
     bytes msg = 1;
 }
 
-message Commitment {
+message Message_Res {
     int64 random = 1;
 }
 
-message Commitment_Res {
+message Validate_Message {
+    int64 random = 1;
+}
+
+message Validate_Message_Res{
     bool val = 1;
     int64 roll = 2;
 }
