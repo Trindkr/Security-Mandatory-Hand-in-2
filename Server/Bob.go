@@ -40,9 +40,9 @@ func (b *Bob) CommitMsg(ctx context.Context, msg *gRPC.Message) (*gRPC.Message_R
 	return &gRPC.Message_Res{Random: rndm}, nil
 }
 
-// func (b *Bob) Validate_Message(ctx context.Context, msg *gRPC.Validate_Message)(*gRPC.Validate_Message_Res, error){
+func (b *Bob) Validate_Message(ctx context.Context, msg *gRPC.Validate_Message)(*gRPC.Validate_Message_Res, error){
 
-// }
+}
 
 func serverSetup() {
 	flag.Parse()

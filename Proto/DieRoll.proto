@@ -11,7 +11,7 @@ service CommitmentService
 }
 
 message Message {
-    bytes msg = 1;
+    bytes random = 1;
 }
 
 message Message_Res {
