@@ -3,12 +3,14 @@ package main
 import (
 
 	//"context"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net"
 
 	gRPC "github.com/Trindkr/Security-Mandatory-Hand-in-2-golang/proto"
@@ -18,21 +20,31 @@ import (
 
 type Bob struct {
 	gRPC.UnimplementedCommitmentServiceServer
+	bobRndm    int64
+	commitment []byte
 }
 
 var port = flag.Int("port", 50051, "the port to serve on")
-
-// func (s *Bob) UnaryEcho(ctx context.Context, req *pb.EchoRequest) (*pb.EchoResponse, error) {
-// 	return &gRPC.EchoResponse{Message: req.Message}, nil
-// }
 
 func main() {
 
 	serverSetup()
 }
 
+func (b *Bob) CommitMsg(ctx context.Context, msg *gRPC.Message) (*gRPC.Message_Res, error) {
+	fmt.Println("Bob recieved commit: %v from Alice", msg.GetMsg())
+	b.commitment = msg.GetMsg()
+	rndm := rand.Int63()
+	fmt.Println("Bob generates a random number: %v", rndm)
+	b.bobRndm = rndm
+	return &gRPC.Message_Res{Random: rndm}, nil
+}
 
-func serverSetup(){
+// func (b *Bob) Validate_Message(ctx context.Context, msg *gRPC.Validate_Message)(*gRPC.Validate_Message_Res, error){
+
+// }
+
+func serverSetup() {
 	flag.Parse()
 	log.Printf("Bob starting on port %d...\n", *port)
 
@@ -64,7 +76,10 @@ func serverSetup(){
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	bob := &Bob{}
+	bob := &Bob{
+		bobRndm:    0,
+		commitment: nil,
+	}
 
 	gRPC.RegisterCommitmentServiceServer(serv, bob)
 	if err := serv.Serve(lis); err != nil {

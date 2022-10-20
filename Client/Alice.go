@@ -1,12 +1,15 @@
 package main
 
 import (
-
+	"context"
+	"crypto/sha1"
 	"crypto/tls"
 	"crypto/x509"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 
 	gRPC "github.com/Trindkr/Security-Mandatory-Hand-in-2-golang/proto"
 	"google.golang.org/grpc"
@@ -18,8 +21,39 @@ var addr = flag.String("addr", "localhost:50051", "the address to connect to")
 
 func main() {
 	flag.Parse()
-
 	connectToBob()
+	aliceRndm, bobRndm := rollAndCommit()
+	aliceValidiatedRndm := validateMessage(aliceRndm)
+	dieRoll := calculateDieRoll(aliceValidiatedRndm, bobRndm)
+	fmt.Println("Die roll is: %v", dieRoll)
+
+}
+
+func rollAndCommit()(int64, int64){
+	aliceRndm := rand.Int63()
+	fmt.Println("Alice generates a ramdom number: %v", aliceRndm)
+	commitment := sha1.New().Sum([]byte(fmt.Sprint(aliceRndm)))
+	fmt.Println("Alice hashes her random number and sends commits it to Bob: %v", commitment)
+	res, err := bob.CommitMsg(context.Background(),&gRPC.Message{Msg: commitment[:]})
+	if err != nil {
+		log.Fatal("Error occured. Could not commit message: ", err)
+	}
+	return aliceRndm,res.Random
+}
+
+func validateMessage(msg int64) (int64){
+	res, err := bob.ValidateCommitment(context.Background(), &gRPC.Validate_Message{Random: msg})
+	if err != nil {
+		log.Fatal("Error occured. Could not validate message: ", err)
+	}
+	if !res.Val {
+		return 0
+	}
+	return msg
+}
+
+func calculateDieRoll(aliceRdnm int64,bobRndm int64) int64{
+	return ((aliceRdnm ^ bobRndm) % 6 ) + 1
 }
 
 func connectToBob() {
