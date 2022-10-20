@@ -3,7 +3,9 @@ package main
 import (
 
 	//"context"
+	"bytes"
 	"context"
+	"crypto/sha1"
 	"crypto/tls"
 	"crypto/x509"
 	"flag"
@@ -12,6 +14,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"time"
 
 	gRPC "github.com/Trindkr/Security-Mandatory-Hand-in-2-golang/proto"
 	"google.golang.org/grpc"
@@ -27,21 +30,36 @@ type Bob struct {
 var port = flag.Int("port", 50051, "the port to serve on")
 
 func main() {
-
+	rand.Seed(time.Now().UnixNano() + 1)
 	serverSetup()
 }
 
 func (b *Bob) CommitMsg(ctx context.Context, msg *gRPC.Message) (*gRPC.Message_Res, error) {
-	fmt.Println("Bob recieved commit: %v from Alice", msg.GetMsg())
-	b.commitment = msg.GetMsg()
+	fmt.Println("Bob recieved commit: ", msg.GetHashedRandom())
+	b.commitment = msg.GetHashedRandom()
 	rndm := rand.Int63()
-	fmt.Println("Bob generates a random number: %v", rndm)
+	fmt.Println("Bob generates a random number: ", rndm)
 	b.bobRndm = rndm
 	return &gRPC.Message_Res{Random: rndm}, nil
 }
 
-func (b *Bob) Validate_Message(ctx context.Context, msg *gRPC.Validate_Message)(*gRPC.Validate_Message_Res, error){
+func (b *Bob) ValidateCommitment(ctx context.Context, msg *gRPC.Validate_Message) (*gRPC.Validate_Message_Res, error) {
+	aliceRndm := msg.GetRandom()
+	hashedRndm := sha1.New().Sum([]byte(fmt.Sprint(aliceRndm)))
 
+	if !bytes.Equal(b.commitment, hashedRndm) {
+		fmt.Println("Bob declared Alice's commitment invalid")
+		return &gRPC.Validate_Message_Res{Validated: false}, nil
+	}
+	calcRoll := calculateDieRoll(aliceRndm, b.bobRndm)
+	fmt.Println("Bob declared Alice's commitment valid, and calculates die roll: ", calcRoll)
+
+	return &gRPC.Validate_Message_Res{Validated: true, Roll: calcRoll}, nil
+
+}
+
+func calculateDieRoll(aliceRdnm int64, bobRndm int64) int64 {
+	return ((aliceRdnm ^ bobRndm) % 6) + 1
 }
 
 func serverSetup() {

@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"time"
 
 	gRPC "github.com/Trindkr/Security-Mandatory-Hand-in-2-golang/proto"
 	"google.golang.org/grpc"
@@ -20,40 +21,43 @@ var bob gRPC.CommitmentServiceClient
 var addr = flag.String("addr", "localhost:50051", "the address to connect to")
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	flag.Parse()
 	connectToBob()
+
+}
+func roll() {
 	aliceRndm, bobRndm := rollAndCommit()
 	aliceValidiatedRndm := validateMessage(aliceRndm)
 	dieRoll := calculateDieRoll(aliceValidiatedRndm, bobRndm)
-	fmt.Println("Die roll is: %v", dieRoll)
-
+	fmt.Println("Die roll is: ", dieRoll)
 }
 
-func rollAndCommit()(int64, int64){
+func rollAndCommit() (int64, int64) {
 	aliceRndm := rand.Int63()
-	fmt.Println("Alice generates a ramdom number: %v", aliceRndm)
+	fmt.Println("Alice generates a ramdom number: ", aliceRndm)
 	commitment := sha1.New().Sum([]byte(fmt.Sprint(aliceRndm)))
-	fmt.Println("Alice hashes her random number and sends commits it to Bob: %v", commitment)
-	res, err := bob.CommitMsg(context.Background(),&gRPC.Message{Msg: commitment[:]})
+	fmt.Println("Alice hashes her random number and sends commits it to Bob: ", commitment)
+	res, err := bob.CommitMsg(context.Background(), &gRPC.Message{HashedRandom: commitment})
 	if err != nil {
 		log.Fatal("Error occured. Could not commit message: ", err)
 	}
-	return aliceRndm,res.Random
+	return aliceRndm, res.Random
 }
 
-func validateMessage(msg int64) (int64){
+func validateMessage(msg int64) int64 {
 	res, err := bob.ValidateCommitment(context.Background(), &gRPC.Validate_Message{Random: msg})
 	if err != nil {
 		log.Fatal("Error occured. Could not validate message: ", err)
 	}
-	if !res.Val {
+	if !res.Validated {
 		return 0
 	}
 	return msg
 }
 
-func calculateDieRoll(aliceRdnm int64,bobRndm int64) int64{
-	return ((aliceRdnm ^ bobRndm) % 6 ) + 1
+func calculateDieRoll(aliceRdnm int64, bobRndm int64) int64 {
+	return ((aliceRdnm ^ bobRndm) % 6) + 1
 }
 
 func connectToBob() {
@@ -84,8 +88,11 @@ func connectToBob() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-
 	bob = gRPC.NewCommitmentServiceClient(conn)
-	log.Println("Connected to Bob")
+
+	fmt.Println("Connected to Bob")
+
+	roll()
+	for  {} //Keep connection open.
 
 }
