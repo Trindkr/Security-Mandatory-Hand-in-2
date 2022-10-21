@@ -35,30 +35,33 @@ func main() {
 }
 
 func (b *Bob) CommitMsg(ctx context.Context, msg *gRPC.Message) (*gRPC.Message_Res, error) {
-	fmt.Println("Bob recieved commitment: ", msg.GetHashedRandom())
+	log.Printf("Bob recieved commitment: \n %d \n from Alice", msg.GetHashedRandom())
 	b.commitment = msg.GetHashedRandom()
 
 	rndm := rand.Int63() //Generate Bob's random number
 	b.bobRndm = rndm
-	fmt.Println("Bob generates a random number: ", rndm)
+	log.Printf("Bob generates a random number: %d and sends it to Alice \n", rndm)
 
 	return &gRPC.Message_Res{Random: rndm}, nil
 }
 
 func (b *Bob) ValidateCommitment(ctx context.Context, msg *gRPC.Validate_Message) (*gRPC.Validate_Message_Res, error) {
 	aliceRndm := msg.GetRandom()
+	log.Printf("Bob recived Alice's random number: %d \n", aliceRndm)
 	hashedRndm := sha1.New().Sum([]byte(fmt.Sprint(aliceRndm))) //Hash Alice's random number
+	log.Printf("Bob hashes Alice's random number:\n %d \n and checks it's equality to that of Alice's commitment", hashedRndm)
 
 	//Validate that Alice's commitment is equal to that of Alice's hashed random number.
 	if !bytes.Equal(b.commitment, hashedRndm) {
-		fmt.Println("Bob declared Alice's commitment invalid")
+		log.Println("Bob declared Alice's commitment invalid")
 		return &gRPC.Validate_Message_Res{Validated: false}, nil
 	}
 
 	//Calculate the value of the die roll, using Alice and Bob's random number.
 	calcRoll := calculateDieRoll(aliceRndm, b.bobRndm)
 
-	fmt.Println("Bob declared Alice's commitment valid, and calculates die roll: ", calcRoll)
+	log.Println("Bob declares Alice's commitment valid")
+	log.Printf("Bob calculates the value of the die roll to be: %d ", calcRoll)
 
 	return &gRPC.Validate_Message_Res{Validated: true, Roll: calcRoll}, nil
 

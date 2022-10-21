@@ -30,16 +30,16 @@ func roll() {
 	aliceRndm, bobRndm := CommitRandomNumber()
 	aliceValidiatedRndm := validateMessage(aliceRndm)
 	calcRoll := calculateDieRoll(aliceValidiatedRndm, bobRndm)
-	fmt.Println("Die roll is: ", calcRoll)
+	fmt.Println("Alice calculates the value of the die roll to be: ", calcRoll)
 }
 
 //Generate a random number, hash it, and send it to Bob.
 func CommitRandomNumber() (int64, int64) {
 	aliceRndm := rand.Int63()
-	fmt.Println("Alice generates a ramdom number: ", aliceRndm)
+	log.Printf("Alice generates a ramdom number: %d \n", aliceRndm)
 
 	commitment := sha1.New().Sum([]byte(fmt.Sprint(aliceRndm))) //Hash random number
-	fmt.Println("Alice hashes her random number and sends commits it to Bob: ", commitment)
+	log.Printf("Alice hashes her random number: \n %d \n and commits it to Bob \n", commitment)
 
 	res, err := bob.CommitMsg(context.Background(), &gRPC.Message{HashedRandom: commitment}) //Commit hashed random. this also returns Bob's random number.
 	if err != nil {
@@ -50,6 +50,7 @@ func CommitRandomNumber() (int64, int64) {
 
 //Send Bob Alice's random number, used to validate Alice's commitment.
 func validateMessage(msg int64) int64 {
+	log.Println("Alice sends her random number to be validated by Bob")
 	res, err := bob.ValidateCommitment(context.Background(), &gRPC.Validate_Message{Random: msg})
 	if err != nil {
 		log.Fatal("Error occured. Could not validate message: ", err)
@@ -57,6 +58,7 @@ func validateMessage(msg int64) int64 {
 	if !res.Validated {
 		return 0
 	}
+	log.Println("Alice's random number has been validated by Bob")
 	return msg
 }
 
@@ -97,7 +99,7 @@ func connectToBob() {
 	defer conn.Close()
 	bob = gRPC.NewCommitmentServiceClient(conn)
 
-	fmt.Println("Connected to Bob")
+	log.Println("Connected to Bob")
 
 	roll() //Start process of rolling a die.
 	for {
